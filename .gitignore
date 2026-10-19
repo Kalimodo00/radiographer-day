@@ -1,0 +1,8 @@
+# 參考用的原始影像有著作權，不公開上傳（遊戲使用的是 assets/img 裡的程式合成圖）
+影像參考資料/
+
+# 本機開發設定
+.claude/
+__pycache__/
+.DS_Store
+Thumbs.db

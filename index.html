@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RT24｜醫事放射師的一天：免安裝的 3D 模擬小遊戲</title>
+<meta name="description" content="當一天醫事放射師：X 光擺位、CT 顯影劑評估、MRI 安全篩檢、急診 portable。免安裝的 3D 模擬小遊戲。">
+<link rel="stylesheet" href="css/style.css?v=5">
+</head>
+<body>
+<canvas id="scene" aria-label="放射科 3D 場景"></canvas>
+<div id="labels"></div>
+
+<header id="hud" class="hidden">
+  <div class="clock" id="clock">07:50</div>
+  <div class="brand">RT24<small id="shiftNote">白班</small></div>
+  <div class="stats" id="stats"></div>
+  <div class="hud-btns">
+    <button type="button" id="btnSound" title="音效開關">🔊</button>
+    <button type="button" id="btnMusic" title="音樂開關">🎵</button>
+    <button type="button" id="btnCodex">圖鑑</button>
+    <button type="button" id="btnHome">主頁</button>
+  </div>
+</header>
+
+<div id="objective" class="hidden">
+  <span class="obj-tag">下一步</span>
+  <span id="objText"></span>
+  <button type="button" id="btnGo">帶我去</button>
+</div>
+
+<button type="button" id="prompt" class="hidden"></button>
+
+<div id="dialog" class="hidden">
+  <div class="dlg-who" id="dlgWho"></div>
+  <div class="dlg-text" id="dlgText"></div>
+  <button type="button" class="btn primary" id="dlgNext">繼續</button>
+</div>
+
+<aside id="panel" class="hidden">
+  <div class="panel-kicker" id="panelKicker"></div>
+  <h2 id="panelTitle"></h2>
+  <div id="panelBody"></div>
+</aside>
+
+<div id="floaters"></div>
+
+<section id="home" class="overlay">
+  <div class="card">
+    <div class="ticker">07:50　ER PORTABLE ×2　CT 急件 ×1　ON-DUTY ▸ 你</div>
+    <h1>RT<span>24</span></h1>
+    <p class="sub">醫事放射師的一天</p>
+    <label class="field">你的名字
+      <input id="nameInput" type="text" maxlength="10" placeholder="放射師（可以不填）" autocomplete="off">
+    </label>
+    <div class="people-title">今天會遇到的人</div>
+    <ul class="people">
+      <li><i style="background:#f2b54a"></i><b>淑芬組長</b>排班和分工，什麼都知道</li>
+      <li><i style="background:#7fd1c7"></i><b>小傑</b>實習生，很認真也很衝</li>
+      <li><i style="background:#f08fb0"></i><b>怡君</b>急診護理師，電話都是她打的</li>
+      <li><i style="background:#e8eef2"></i><b>張醫師</b>放射科醫師，看你照的每一張片</li>
+    </ul>
+    <button type="button" class="btn primary big" id="btnStart">上班</button>
+    <p class="how">系統會告訴你下一步。跟著頭上有「！」的人或機器走，或按「帶我去」。<br>走動：方向鍵、WASD 或點地板　互動：走近按 E</p>
+    <p class="fine">病人、數值、流程與人物都是虛構並經過簡化的遊戲設定，不代表任何醫院的實際規範，也不是臨床指引。<br>遊戲中的 X 光與 CT 影像皆為程式合成的示意圖，不是真實病人影像。</p>
+  </div>
+</section>
+
+<section id="result" class="overlay hidden">
+  <div class="card wide">
+    <div class="ticker">17:00　交班完成</div>
+    <p class="sub">今天的你是</p>
+    <h1 class="rank" id="rankTitle"></h1>
+    <p id="rankText" class="rank-text"></p>
+    <div id="resultStats" class="result-stats"></div>
+    <div class="people-title">今天的每個決定</div>
+    <ol id="review" class="review"></ol>
+    <div class="row">
+      <button type="button" class="btn primary" id="btnAgain">再上一天班</button>
+      <button type="button" class="btn" id="btnCopy">複製成績</button>
+    </div>
+    <p class="fine">遊戲內容為虛構簡化，實際作業請依各院規範與主管機關法規。</p>
+  </div>
+</section>
+
+<section id="codex" class="overlay hidden">
+  <div class="card wide">
+    <div class="row between">
+      <h2>圖鑑 <small id="codexCount"></small></h2>
+      <button type="button" class="btn" id="btnCodexClose">關閉</button>
+    </div>
+    <div id="codexList" class="codex-list"></div>
+  </div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/audio.js?v=5"></script>
+<script src="js/world.js?v=5"></script>
+<script src="js/ui.js?v=5"></script>
+<script src="js/story.js?v=5"></script>
+<script src="js/main.js?v=5"></script>
+</body>
+</html>
