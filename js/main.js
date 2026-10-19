@@ -81,6 +81,10 @@
     $('codex').classList.remove('hidden');
   }
 
+  // 觸控裝置：介面改用觸控說法、互動按鈕不顯示「E」
+  const isTouch = window.matchMedia ? window.matchMedia('(pointer: coarse)').matches : 'ontouchstart' in window;
+  document.documentElement.classList.toggle('touch', isTouch);
+
   world.init($('scene'));
   world.onArrive = () => { if (playing && !busy && world.distToTarget() < 1.6) RT.sfx.play('arrive'); };
   world.onStep = () => RT.sfx.play('step');
@@ -89,7 +93,7 @@
   world.onFrame = () => {
     const near = playing && !busy && !world.locked && world.distToTarget() < 1.6;
     $('prompt').classList.toggle('hidden', !near);
-    if (near) $('prompt').textContent = 'E　' + RT.STEPS[RT.state.step].prompt;
+    if (near) $('prompt').textContent = (isTouch ? '👆 ' : 'E　') + RT.STEPS[RT.state.step].prompt;
     const talking = !$('dialog').classList.contains('hidden') || !$('panel').classList.contains('hidden');
     if (talking !== ducked) { ducked = talking; RT.sfx.duck(talking); }
   };

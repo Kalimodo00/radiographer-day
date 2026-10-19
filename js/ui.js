@@ -220,6 +220,7 @@
   ui.spotGame = async function (body) {
     const CW = 300, CH = 328, k = CW / 945;
     const c = canvas(body, CW, CH), g = c.getContext('2d');
+    c.classList.add('tall');
     credit(body, 'cxr');
     const hint = el('p', '', '點一下影像上你覺得有問題的地方。剩 3 次。');
     body.appendChild(hint);
@@ -259,7 +260,7 @@
     const IW = 240, k = IW / 351, H = Math.round(655 * k), CW = 340;
     const TOP = Math.round(240 * k), ILIAC = Math.round(395 * k), BOT = Math.round(552 * k);
     const c = canvas(body, CW, H), g = c.getContext('2d');
-    c.style.maxWidth = '340px';
+    c.classList.add('tall');
     credit(body, 'ct');
     const mk = (name, val) => {
       const row = el('label', 'slider', `<span>${name}</span>`);
@@ -291,6 +292,19 @@
     };
     a.oninput = z.oninput = draw;
     draw();
+    // 手指／滑鼠直接在影像上拖：抓離得近的那條線
+    let grab = null;
+    const yAt = (e) => { const r = c.getBoundingClientRect(); return ((e.clientY - r.top) / r.height) * H; };
+    c.onpointerdown = (e) => {
+      if (a.disabled) return;
+      const y = yAt(e);
+      grab = Math.abs(y - a.value) <= Math.abs(y - z.value) ? a : z;
+      grab.value = Math.round(y); draw();
+      try { c.setPointerCapture(e.pointerId); } catch (err) { /* 舊瀏覽器沒有也沒關係 */ }
+    };
+    c.onpointermove = (e) => { if (grab && !a.disabled) { grab.value = Math.round(yAt(e)); draw(); } };
+    c.onpointerup = c.onpointercancel = () => { grab = null; };
+    body.appendChild(el('p', 'tip', '可以直接在影像上拖動兩條線，或用下面的滑桿。'));
     const b = button(body, '開始掃描');
     return new Promise((res) => {
       b.onclick = () => {

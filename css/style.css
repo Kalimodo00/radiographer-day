@@ -129,14 +129,6 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .floater { background: #0f1d25; border: 1px solid var(--line); border-radius: 999px; padding: 5px 14px; font-size: 13px; font-weight: 700; animation: rise 2.2s forwards; }
 @keyframes rise { 0% { opacity: 0; transform: translateY(8px); } 12%, 75% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-8px); } }
 
-@media (max-width: 720px) {
-  .brand, .stat span { display: none; }
-  .stat { width: 34px; }
-  .clock { font-size: 20px; }
-  #hud { gap: 8px; padding: 0 8px; }
-  #panel { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 72vh; }
-  .people, .result-stats { grid-template-columns: 1fr; }
-}
 
 /* NPC 對話泡泡 */
 .label.bubble { background: #ffffff; color: #10222b; font-weight: 600; font-size: 12px; padding: 5px 10px; border-radius: 10px;
@@ -145,3 +137,62 @@ button { font: inherit; color: inherit; cursor: pointer; }
   border: 5px solid transparent; border-bottom: 0; border-top-color: #ffffff; }
 @keyframes pop { from { opacity: 0; margin-top: 6px; } to { opacity: 1; margin-top: 0; } }
 .fine a { color: var(--muted); }
+
+/* --- 觸控與手機 --- */
+html.touch .kb { display: none; }
+html:not(.touch) .touch { display: none; }
+body { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+input { -webkit-user-select: text; user-select: text; }
+button { touch-action: manipulation; }
+#scene { touch-action: none; }
+.hud-btns .ico { display: none; }
+#panel p.tip { font-size: 12px; color: var(--muted); margin: -2px 0 6px; }
+#panel canvas.tall { max-width: 340px; }
+
+@media (max-width: 720px) {
+  .brand { display: none; }
+  .people, .result-stats { grid-template-columns: 1fr; }
+  #hud { height: auto; flex-wrap: wrap; row-gap: 6px; padding: calc(6px + env(safe-area-inset-top)) 10px 8px; }
+  .clock { font-size: 22px; }
+  .hud-btns { margin-left: auto; }
+  .hud-btns button { min-width: 38px; min-height: 36px; padding: 4px 8px; font-size: 16px; }
+  .hud-btns .ico { display: inline; }
+  .hud-btns .txt { display: none; }
+  .stats { order: 3; flex-basis: 100%; margin-left: 0; gap: 8px; }
+  .stat { flex: 1; width: auto; font-size: 10px; }
+  .stat span { display: inline; }
+  #objective { top: calc(88px + env(safe-area-inset-top)); left: 8px; right: 8px; max-width: none; font-size: 13px; }
+  #btnGo { padding: 8px 12px; }
+  #prompt { bottom: calc(28px + env(safe-area-inset-bottom)); padding: 14px 26px; font-size: 16px; }
+  #dialog { bottom: calc(10px + env(safe-area-inset-bottom)); padding: 12px 14px 14px; }
+  .dlg-text { font-size: 15px; }
+  #dlgNext { padding: 10px 22px; }
+  #panel { top: auto; left: 8px; right: 8px; width: auto; bottom: calc(8px + env(safe-area-inset-bottom)); max-height: 76vh; padding: 14px; }
+  #panel h2 { font-size: 18px; margin: 4px 0 6px; }
+  #panel p { font-size: 13px; line-height: 1.6; margin: 6px 0; }
+  #panel canvas.tall { width: auto; max-width: 100%; max-height: 40vh; }
+  .opt { padding: 12px; }
+  .overlay { place-items: start center; padding: calc(12px + env(safe-area-inset-top)) 10px calc(12px + env(safe-area-inset-bottom)); }
+  .card { padding: 18px 16px; }
+  .card h1 { font-size: 40px; }
+  .rank { font-size: 28px !important; }
+  .review { max-height: none; }
+  .codex-list { max-height: none; }
+  .row { flex-wrap: wrap; }
+  .row .btn { flex: 1; }
+  .row.between .btn { flex: none; }
+}
+
+/* 手機橫放等矮螢幕：縮小影像、壓縮間距 */
+@media (max-height: 500px) and (min-width: 721px) {
+  #hud { height: 44px; }
+  .clock { font-size: 20px; }
+  #objective { top: 50px; padding: 6px 10px; }
+  #panel { top: 50px; bottom: 6px; width: min(440px, 55vw); padding: 10px 14px; }
+  #panel h2 { font-size: 17px; margin: 2px 0 4px; }
+  #panel p { font-size: 13px; line-height: 1.5; margin: 4px 0; }
+  #panel canvas { width: auto; max-width: 100%; max-height: 52vh; }
+  #dialog { bottom: 6px; padding: 10px 14px 12px; }
+  .dlg-text { min-height: 0; font-size: 14px; }
+  #prompt { bottom: 14px; }
+}
