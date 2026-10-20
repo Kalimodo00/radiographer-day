@@ -154,7 +154,7 @@
         const s = (t - t0) / 1000;
         v = (Math.sin(s * 1.9 + Math.sin(s * 0.7) * 0.8) + 1) / 2;
         g.fillStyle = '#05090c'; g.fillRect(0, 0, 340, 210);
-        g.fillStyle = '#2b3944'; g.fillRect(60, 14, 170, 182); // 探測器
+        g.fillStyle = '#2b3944'; g.fillRect(60, 14, 170, 182); // X光接收板
         g.fillStyle = '#5c6f7b';
         g.beginPath(); g.ellipse(145, 120, 62 + v * 6, 84, 0, 0, 7); g.fill();
         g.beginPath(); g.arc(145, 28, 20, 0, 7); g.fill();
@@ -384,10 +384,14 @@
   };
 
   // --- 違法事件：警笛、紅藍燈、鐵柵欄落下，再列出法條與後果 ---
-  ui.crime = function (key) {
+  ui.crime = async function (key) {
     const d = RT.CRIMES[key];
     const ov = $('crime');
+    const complaint = d.kind === 'complaint';
     RT.world.locked = true;
+    if (d.shout) await ui.say(d.shout.who, d.shout.text);
+    $('crimeTicker').textContent = complaint ? '📨 病人投訴｜性騷擾申訴調查啟動' : '🚨 警方已到場';
+    ov.classList.toggle('complaint', complaint);
     $('crimeTitle').textContent = d.title;
     $('crimeAct').textContent = d.act;
     $('crimeLaws').innerHTML = d.groups.map((g) =>
@@ -396,11 +400,11 @@
     $('crimeReal').textContent = d.real;
     ov.classList.remove('hidden', 'stage2', 'stage3');
     ov.scrollTop = 0;
-    play('siren');
+    play(complaint ? 'phone' : 'siren');
     RT.state.crimes = (RT.state.crimes || 0) + 1;
     RT.state.log.push({ title: d.logTitle, grade: 'bad', text: d.logText });
     ui.applyFx({ safety: -40 });
-    setTimeout(() => { ov.classList.add('stage2'); play('clang'); }, 1300);
+    setTimeout(() => { ov.classList.add('stage2'); play(complaint ? 'stamp' : 'clang'); }, 1300);
     setTimeout(() => {
       ov.classList.add('stage3');
       speak(d.title + '。' + d.act + d.groups.map((g) => g.head + '：' + g.laws.map((l) => l.name + '，' + l.pen).join('；')).join('。') + '。' + d.real);
@@ -408,7 +412,7 @@
     return new Promise((res) => {
       const done = (r) => { ov.classList.add('hidden'); if (RT.voice) RT.voice.stop(); res(r); };
       $('btnCrimeRetry').onclick = () => done('retry');
-      $('btnCrimeEnd').onclick = () => done('arrest');
+      $('btnCrimeEnd').onclick = () => done(complaint ? 'suspend' : 'arrest');
     });
   };
 

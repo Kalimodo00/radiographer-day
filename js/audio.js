@@ -105,6 +105,8 @@
       osc.connect(f); f.connect(g); g.connect(sfxBus);
       osc.start(t); osc.stop(t + 4.2);
     },
+    // 投訴印章蓋下去
+    stamp: () => { noise(0.18, { freq: 300, q: 1.5, vol: 0.16 }); tone(90, 0.25, { type: 'square', vol: 0.05 }); },
     // 鐵柵欄落下
     clang: () => { noise(0.5, { freq: 900, q: 6, vol: 0.12 }); tone(110, 0.6, { type: 'square', vol: 0.05 }); tone(165, 0.5, { type: 'square', vol: 0.03, at: 0.02 }); },
     // 鋼瓶被吸過去的呼嘯聲＋撞上磁體

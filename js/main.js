@@ -43,7 +43,7 @@
     $('prompt').classList.add('hidden'); $('objective').classList.add('hidden');
     const r = await fn(s);
     busy = false;
-    if (r === 'arrest') return finish(true);
+    if (r === 'arrest' || r === 'suspend') return finish(r);
     if (r === 'retry') return activate(s);
     nextStep();
   }
@@ -67,8 +67,9 @@
     RT.sfx.play(arrested ? 'clang' : 'fanfare');
     $('objective').classList.add('hidden');
     const sc = score();
-    const rank = arrested ? ['移送法辦', '你的執照、工作和名聲，都在那一刻結束了。現實中，這一步沒有「重來」可以按。']
-      : RT.state.crimes ? ['帶著前科的放射師', '遊戲讓你重來了，現實不會。下面記錄了你差點毀掉職涯的那一刻。']
+    const rank = arrested === 'suspend' ? ['停職調查中', '醫院暫停了你所有的臨床工作，等待性騷擾申訴調查結果。現實中，這一步沒有「重來」可以按。']
+      : arrested ? ['移送法辦', '你的執照、工作和名聲，都在那一刻結束了。現實中，這一步沒有「重來」可以按。']
+      : RT.state.crimes ? ['帶著紀錄的放射師', '遊戲讓你重來了，現實不會。下面記錄了你差點毀掉職涯的那一刻。']
       : sc >= 80 ? ['ALARA 守門人', '該攔的都攔下來了，該照的一張到位。病人不會知道你今天替他們擋掉了什麼，這正是這份工作的樣子。']
       : sc >= 65 ? ['可靠的當班放射師', '有幾個地方可以更好，但沒有人因為你而多冒風險。明天繼續。']
       : sc >= 50 ? ['還在抓節奏的新人', '今天有點兵荒馬亂。回頭看看下面每個決定，下次會順很多。']

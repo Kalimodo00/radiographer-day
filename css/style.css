@@ -263,3 +263,17 @@ html.big .stat { font-size: 12px; }
   .stat { width: 58px; }
   .hud-btns button { padding: 6px 8px; }
 }
+
+/* 投訴事件：琥珀色警示、蓋上「投訴」印章（不出現警笛與柵欄） */
+#crime .stamp { display: none; }
+#crime.complaint .siren { animation: none; background: rgba(245, 197, 66, 0.28); }
+#crime.complaint .bars { display: none; }
+#crime.complaint .stamp { display: block; position: fixed; left: 50%; top: 42%; z-index: 1; pointer-events: none;
+  font: 900 64px "Microsoft JhengHei", sans-serif; color: #e23b3b; border: 8px solid #e23b3b; border-radius: 14px;
+  padding: 6px 28px; letter-spacing: 6px; opacity: 0; transform: translate(-50%, -50%) rotate(-12deg) scale(2.4); }
+#crime.complaint.stage2 .stamp { animation: stamp 0.35s cubic-bezier(0.3, 1.6, 0.6, 1) forwards; }
+#crime.complaint.stage3 .stamp { opacity: 0.18; transform: translate(-50%, -50%) rotate(-12deg) scale(1); animation: none; }
+@keyframes stamp { to { opacity: 0.95; transform: translate(-50%, -50%) rotate(-12deg) scale(1); } }
+#crime.complaint .crime-card { border-color: var(--warn); }
+#crime.complaint .crime-card h1 { color: var(--warn); }
+#crime .crime-wrap { z-index: 2; }

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RT24｜醫事放射師的一天：免安裝的 3D 模擬小遊戲</title>
 <meta name="description" content="當一天醫事放射師：X 光擺位、CT 顯影劑評估、MRI 安全篩檢、急診 portable。免安裝的 3D 模擬小遊戲。">
-<link rel="stylesheet" href="css/style.css?v=13">
+<link rel="stylesheet" href="css/style.css?v=15">
 </head>
 <body>
 <canvas id="scene" aria-label="放射科 3D 場景"></canvas>
@@ -92,9 +92,10 @@
 <section id="crime" class="hidden">
   <div class="siren"></div>
   <div class="bars"></div>
+  <div class="stamp">投　訴</div>
   <div class="crime-wrap">
     <div class="card wide crime-card">
-      <div class="ticker">🚨 警方已到場</div>
+      <div class="ticker" id="crimeTicker">🚨 警方已到場</div>
       <h1 id="crimeTitle"></h1>
       <p id="crimeAct" class="crime-act"></p>
       <div id="crimeLaws"></div>
@@ -131,11 +132,11 @@
 </section>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="js/voice.js?v=13"></script>
-<script src="js/audio.js?v=13"></script>
-<script src="js/world.js?v=13"></script>
-<script src="js/ui.js?v=13"></script>
-<script src="js/story.js?v=13"></script>
-<script src="js/main.js?v=13"></script>
+<script src="js/voice.js?v=15"></script>
+<script src="js/audio.js?v=15"></script>
+<script src="js/world.js?v=15"></script>
+<script src="js/ui.js?v=15"></script>
+<script src="js/story.js?v=15"></script>
+<script src="js/main.js?v=15"></script>
 </body>
 </html>
