@@ -110,7 +110,7 @@
     // 鋼瓶被吸過去的呼嘯聲＋撞上磁體
     whoosh: () => noise(0.7, { freq: 300, to: 2400, q: 2, vol: 0.09, attack: 0.5 }),
     slam: () => { noise(0.35, { freq: 600, q: 3, vol: 0.16 }); tone(70, 0.5, { type: 'square', vol: 0.06 }); },
-    // 失超：液態氦汽化的強烈嘶嘶聲
+    // 淬熄：液態氦汽化的強烈嘶嘶聲
     hiss: () => noise(5, { filter: 'highpass', freq: 1200, vol: 0.09, attack: 0.3 }),
     cash: () => [1319, 1568, 2093].forEach((f, i) => tone(f, 0.25, { type: 'triangle', vol: 0.05, at: i * 0.09 })),
     fanfare: () => {

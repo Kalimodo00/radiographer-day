@@ -269,6 +269,8 @@
   ui.rangeGame = async function (body) {
     const IW = 240, k = IW / 351, H = Math.round(655 * k), CW = 340;
     const TOP = Math.round(240 * k), ILIAC = Math.round(395 * k), BOT = Math.round(552 * k);
+    // 容許範圍（定位像約 5 px ≈ 1 cm）：往內少蓋 2 cm 內、往外多掃 6 cm 內都算合理
+    const CM = 5.2, IN_OK = 2 * CM, IN_MAX = 4 * CM, OUT_OK = 6 * CM, OUT_MAX = 12 * CM;
     const c = canvas(body, CW, H), g = c.getContext('2d');
     c.classList.add('tall');
     credit(body, 'ct');
@@ -292,6 +294,10 @@
       g.font = '12px sans-serif'; g.fillStyle = '#2fc4b2';
       if (!reveal) { g.fillText('起點', IW + 6, s + 4); g.fillText('終點', IW + 6, e + 4); }
       if (reveal) {
+        // 綠色區：起點、終點落在這裡都算合理
+        g.fillStyle = 'rgba(88,214,141,0.28)';
+        g.fillRect(0, TOP - OUT_OK, IW, OUT_OK + IN_OK);
+        g.fillRect(0, BOT - IN_OK, IW, OUT_OK + IN_OK);
         g.setLineDash([5, 4]); g.strokeStyle = '#f5c542'; g.lineWidth = 2;
         [['橫膈頂', TOP], ['髂嵴', ILIAC], ['恥骨聯合下緣', BOT]].forEach(([n, y]) => {
           g.beginPath(); g.moveTo(0, y); g.lineTo(IW, y); g.stroke();
@@ -321,9 +327,10 @@
         const s = Math.min(+a.value, +z.value), e = Math.max(+a.value, +z.value);
         a.disabled = z.disabled = true; b.remove();
         reveal = true; draw(); play('ct');
-        const covered = s <= TOP + 4 && e >= BOT - 4;
-        const extra = Math.max(0, TOP - s) + Math.max(0, e - BOT);
-        res(!covered ? 'bad' : extra <= 34 ? 'good' : 'ok');
+        const short = Math.max(s - TOP, BOT - e, 0);         // 往內少蓋的最大距離
+        const extra = Math.max(TOP - s, e - BOT, 0);         // 往外多掃的最大距離
+        ui.rangeReason = short > IN_OK ? 'short' : extra > OUT_OK ? 'extra' : '';
+        res(short > IN_MAX || extra > OUT_MAX ? 'bad' : ui.rangeReason ? 'ok' : 'good');
       };
     });
   };
@@ -405,7 +412,7 @@
     });
   };
 
-  // --- 失超：白霧與帳單 ---
+  // --- 淬熄：白霧與帳單 ---
   ui.quenchBill = function () {
     const f = $('fog');
     f.classList.remove('hidden');
@@ -416,7 +423,7 @@
       const bill = $('bill');
       bill.classList.remove('hidden');
       play('cash');
-      speak('緊急失超。損失約新台幣兩百萬元。');
+      speak('緊急淬熄。損失約新台幣兩百萬元。');
       $('btnBill').onclick = () => { bill.classList.add('hidden'); f.classList.add('hidden'); if (RT.voice) RT.voice.stop(); res(); };
     }, 3200));
   };

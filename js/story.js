@@ -26,7 +26,7 @@
     gauss: { t: '5 高斯線', d: '磁場強度 5 高斯的邊界，地上常畫黃線標示。線內屬於管制區，沒經過篩檢的人和物品不能進去。' },
     chaperone: { t: '告知、同意與陪同', d: '擺位需要碰觸病人時，先說明原因並取得同意，盡量請病人自行調整或用手背輔助；檢查服、布單遮蓋與同性同仁陪同，能保護病人，也保護放射師。' },
     harass: { t: '權勢性騷擾', d: '利用醫療、教育、職場等關係，對受自己照護或監督的人性騷擾。性騷擾防治法對權勢性騷擾加重處罰，醫事人員更要守住專業界線。' },
-    quench: { t: '失超（Quench）', d: 'MRI 的超導磁體靠液態氦維持低溫。緊急失超會讓液態氦迅速汽化、經失超管排出，磁場在短時間內消失。只用在有人被夾住或有生命危險時，代價是大量氦氣與長時間停機。' },
+    quench: { t: '淬熄（Quench）', d: 'MRI 的超導磁體靠液態氦維持低溫。緊急淬熄會讓液態氦迅速汽化、經淬熄管排出，磁場在短時間內消失。只用在有人被夾住或有生命危險時，代價是大量氦氣與長時間停機。' },
     pregnancy: { t: '懷孕確認', d: '育齡女性做游離輻射檢查前，要在顧及隱私的情況下詢問懷孕可能；有疑慮就先請醫師評估。' },
   };
 
@@ -75,7 +75,8 @@
   const mini = async (title, intro, game, res, codex) => {
     const body = ui.openPanel(title, intro);
     const g = await game(body);
-    return ui.feedback(body, title, g, res[g].text, res[g].fx, codex);
+    const t = typeof res[g].text === 'function' ? res[g].text() : res[g].text;
+    return ui.feedback(body, title, g, t, res[g].fx, codex);
   };
 
   RT.STEPS = [
@@ -226,10 +227,14 @@
     {
       time: '12:55', poi: 'ctconsole', place: 'CT 室', hint: '到鉛玻璃後面的 CT 控制台，設定掃描範圍', prompt: '操作控制台',
       async run() {
-        await mini('掃描範圍', '醫囑改為不含顯影劑的腹部＋骨盆 CT。在定位像上拉出範圍：從橫膈頂蓋到恥骨聯合下緣。多掃的每一公分都是多給的劑量。', ui.rangeGame, {
-          good: { fx: { quality: 8, safety: 6 }, text: '範圍剛剛好。該看的都在，不該照的沒照。' },
-          ok: { fx: { quality: 4, safety: -5 }, text: '該看的都有蓋到，但範圍拉得太大，病人多吃了不必要的劑量。' },
-          bad: { fx: { quality: -10, pace: -5 }, text: '範圍沒蓋滿，漏掉一段。只好補掃，時間和劑量都多了。' },
+        await mini('掃描範圍', '醫囑改為不含顯影劑的腹部＋骨盆 CT。在定位像上拉出範圍：大約從橫膈頂到恥骨聯合下緣，上下留一點餘裕就好。但多掃太多，就是多給的劑量。', ui.rangeGame, {
+          good: { fx: { quality: 8, safety: 6 }, text: '範圍合理：起點和終點都落在綠色區裡。該看的都在，也沒有多掃一大段。' },
+          ok: { fx: { quality: 3, safety: -3 }, text: () => (ui.rangeReason === 'short'
+            ? '大致可以，但邊緣切得有點緊：橫膈頂或恥骨聯合可能沒完整包進來。再往外留一點餘裕會更安心。'
+            : '該看的都有蓋到，但上下多掃了一段，病人多吃了一些不必要的劑量。') },
+          bad: { fx: { quality: -10, pace: -5 }, text: () => (ui.rangeReason === 'short'
+            ? '範圍沒蓋滿，漏掉一大段。只好補掃，時間和劑量都多了。'
+            : '範圍拉得太大，多掃了一大段沒有醫囑的部位，劑量白白增加。') },
         }, ['scout', 'alara']);
         world.show('lin', false);
         world.place('chen', 30.4, 11.6, -1.57);
@@ -291,14 +296,14 @@
           await ui.choose({
             title: '小傑被夾在磁體上', intro: '他臉色發白、呼吸急促。3T 的磁場一直都在，你要怎麼做？', codex: ['quench'],
             options: [
-              { label: '請其他人撤離、打開門，立刻按下緊急失超（Quench）', grade: 'good', fx: { safety: 6 }, text: '有人被夾住、可能受傷時，就是按下失超的時機。同時讓其他人離開、打開門，避免氦氣外洩造成缺氧。' },
-              { label: '先試著徒手把鋼瓶拔下來', grade: 'bad', fx: { safety: -8 }, text: '3T 磁場的吸力可以達到好幾百公斤，你根本拔不動，還差點把自己的手夾進去。最後還是得按失超，只是晚了寶貴的幾分鐘。' },
-              { label: '打給原廠工程師，等他來慢慢降場', grade: 'bad', fx: { safety: -12 }, text: '一般的降場要好幾個小時，被夾住的人等不了。人命優先，這時候該按的就是失超。' },
+              { label: '請其他人撤離、打開門，立刻按下緊急淬熄（Quench）', grade: 'good', fx: { safety: 6 }, text: '有人被夾住、可能受傷時，就是按下淬熄的時機。同時讓其他人離開、打開門，避免氦氣外洩造成缺氧。' },
+              { label: '先試著徒手把鋼瓶拔下來', grade: 'bad', fx: { safety: -8 }, text: '3T 磁場的吸力可以達到好幾百公斤，你根本拔不動，還差點把自己的手夾進去。最後還是得按淬熄，只是晚了寶貴的幾分鐘。' },
+              { label: '打給原廠工程師，等他來慢慢降場', grade: 'bad', fx: { safety: -12 }, text: '一般的降場要好幾個小時，被夾住的人等不了。人命優先，這時候該按的就是淬熄。' },
             ],
           });
           RT.sfx.play('hiss');
           world.smoke(30, 3.7, 4);
-          world.setMriLabel('MR-01 · 失超停機');
+          world.setMriLabel('MR-01 · 淬熄停機');
           await ui.say(NARR, '轟——液態氦在幾十秒內汽化，大量白色氣體湧出。磁場消失，鋼瓶掉了下來，小傑也終於脫身。');
           await ui.quenchBill();
           world.place('intern', 30, 7.4, 0);

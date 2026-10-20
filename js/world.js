@@ -675,7 +675,7 @@
   world.shake = function (sec) { shakeT = sec; };
   // 鏡頭暫時對準某處（例如 MRI 室），傳 null 回到玩家
   world.focus = function (x, z) { focusPt = x == null ? null : new THREE.Vector3(x, 0, z); };
-  // 失超：磁體上方噴出白煙，往四周擴散
+  // 淬熄：磁體上方噴出白煙，往四周擴散
   world.smoke = function (x, z, sec) {
     let t = 0, acc = 0;
     tasks.push((dt) => {

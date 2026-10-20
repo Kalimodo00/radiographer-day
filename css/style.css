@@ -223,7 +223,7 @@ button { touch-action: manipulation; }
 .crime-right { background: #12312b; border-left: 4px solid var(--good); border-radius: 6px; padding: 8px 12px; font-size: 13px; line-height: 1.6; }
 .crime-real { font-size: 13px; line-height: 1.7; color: var(--text); }
 
-/* --- 失超：白霧與帳單 --- */
+/* --- 淬熄：白霧與帳單 --- */
 #fog { position: fixed; inset: 0; z-index: 9; pointer-events: none; opacity: 0;
   background: radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.95), rgba(235, 242, 246, 0.85) 60%, rgba(220, 230, 236, 0.7)); }
 #fog.show { animation: fog 3.4s ease-out forwards; }
