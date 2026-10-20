@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RT24｜醫事放射師的一天：免安裝的 3D 模擬小遊戲</title>
 <meta name="description" content="當一天醫事放射師：X 光擺位、CT 顯影劑評估、MRI 安全篩檢、急診 portable。免安裝的 3D 模擬小遊戲。">
-<link rel="stylesheet" href="css/style.css?v=8">
+<link rel="stylesheet" href="css/style.css?v=12">
 </head>
 <body>
 <canvas id="scene" aria-label="放射科 3D 場景"></canvas>
@@ -18,6 +18,8 @@
   <div class="hud-btns">
     <button type="button" id="btnSound" title="音效開關">🔊</button>
     <button type="button" id="btnMusic" title="音樂開關">🎵</button>
+    <button type="button" id="btnVoice" title="語音朗讀">🗣</button>
+    <button type="button" id="btnBig" title="大字模式">A+</button>
     <button type="button" id="btnCodex" title="圖鑑"><span class="ico">📖</span><span class="txt">圖鑑</span></button>
     <button type="button" id="btnHome" title="主頁"><span class="ico">🏠</span><span class="txt">主頁</span></button>
   </div>
@@ -53,6 +55,10 @@
     <label class="field">你的名字
       <input id="nameInput" type="text" maxlength="10" placeholder="放射師（可以不填）" autocomplete="off">
     </label>
+    <div class="a11y">
+      <button type="button" id="optVoice">🗣 朗讀對話：關</button>
+      <button type="button" id="optBig">🔠 大字模式：關</button>
+    </div>
     <div class="people-title">今天會遇到的人</div>
     <ul class="people">
       <li><i style="background:#f2b54a"></i><b>淑芬組長</b>排班和分工，什麼都知道</li>
@@ -83,6 +89,37 @@
   </div>
 </section>
 
+<section id="crime" class="hidden">
+  <div class="siren"></div>
+  <div class="bars"></div>
+  <div class="crime-wrap">
+    <div class="card wide crime-card">
+      <div class="ticker">🚨 警方已到場</div>
+      <h1 id="crimeTitle"></h1>
+      <p id="crimeAct" class="crime-act"></p>
+      <div id="crimeLaws"></div>
+      <h3>正確的做法</h3>
+      <p id="crimeRight" class="crime-right"></p>
+      <p id="crimeReal" class="crime-real"></p>
+      <div class="row">
+        <button type="button" class="btn primary" id="btnCrimeRetry">回到事件之前（只有遊戲能重來）</button>
+        <button type="button" class="btn danger" id="btnCrimeEnd">結束這一天</button>
+      </div>
+      <p class="fine">法條依全國法規資料庫現行條文簡化說明；實際成立的罪名與刑度，依個案事實由檢察官與法院認定。</p>
+    </div>
+  </div>
+</section>
+
+<div id="fog" class="hidden"></div>
+<section id="bill" class="overlay hidden">
+  <div class="card bill-card">
+    <div class="ticker">MR-01 · 緊急失超（QUENCH）</div>
+    <div class="bill-num">− NT$ 2,000,000</div>
+    <p>補充液態氦、重新升場、原廠檢修與停機損失（遊戲中的示意金額）。<br>MRI 停機一到兩週，今天預約的病人全部改期。</p>
+    <button type="button" class="btn primary big" id="btnBill">繼續</button>
+  </div>
+</section>
+
 <section id="codex" class="overlay hidden">
   <div class="card wide">
     <div class="row between">
@@ -94,10 +131,11 @@
 </section>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="js/audio.js?v=8"></script>
-<script src="js/world.js?v=8"></script>
-<script src="js/ui.js?v=8"></script>
-<script src="js/story.js?v=8"></script>
-<script src="js/main.js?v=8"></script>
+<script src="js/voice.js?v=12"></script>
+<script src="js/audio.js?v=12"></script>
+<script src="js/world.js?v=12"></script>
+<script src="js/ui.js?v=12"></script>
+<script src="js/story.js?v=12"></script>
+<script src="js/main.js?v=12"></script>
 </body>
 </html>

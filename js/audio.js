@@ -90,6 +90,29 @@
     wrong: () => tone(200, 0.12, { type: 'sawtooth', vol: 0.035 }),
     bite: () => { noise(0.05, { freq: 2200, q: 3, vol: 0.08 }); noise(0.05, { freq: 1700, q: 3, vol: 0.06, at: 0.08 }); },
     bubble: () => tone(1180, 0.05, { vol: 0.018, type: 'triangle' }),
+    // 警車鳴笛：高低音來回約 4 秒
+    siren: () => {
+      if (!ctx) return;
+      const t = ctx.currentTime, osc = ctx.createOscillator(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      osc.type = 'sawtooth';
+      for (let i = 0; i < 8; i++) {
+        osc.frequency.setValueAtTime(i % 2 ? 960 : 640, t + i * 0.5);
+        osc.frequency.linearRampToValueAtTime(i % 2 ? 640 : 960, t + i * 0.5 + 0.48);
+      }
+      f.type = 'lowpass'; f.frequency.value = 1800;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.05, t + 0.2);
+      g.gain.setValueAtTime(0.05, t + 3.6); g.gain.exponentialRampToValueAtTime(0.0001, t + 4.1);
+      osc.connect(f); f.connect(g); g.connect(sfxBus);
+      osc.start(t); osc.stop(t + 4.2);
+    },
+    // 鐵柵欄落下
+    clang: () => { noise(0.5, { freq: 900, q: 6, vol: 0.12 }); tone(110, 0.6, { type: 'square', vol: 0.05 }); tone(165, 0.5, { type: 'square', vol: 0.03, at: 0.02 }); },
+    // 鋼瓶被吸過去的呼嘯聲＋撞上磁體
+    whoosh: () => noise(0.7, { freq: 300, to: 2400, q: 2, vol: 0.09, attack: 0.5 }),
+    slam: () => { noise(0.35, { freq: 600, q: 3, vol: 0.16 }); tone(70, 0.5, { type: 'square', vol: 0.06 }); },
+    // 失超：液態氦汽化的強烈嘶嘶聲
+    hiss: () => noise(5, { filter: 'highpass', freq: 1200, vol: 0.09, attack: 0.3 }),
+    cash: () => [1319, 1568, 2093].forEach((f, i) => tone(f, 0.25, { type: 'triangle', vol: 0.05, at: i * 0.09 })),
     fanfare: () => {
       [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.3, { type: 'triangle', vol: 0.06, at: i * 0.12 }));
       [523, 659, 784].forEach((f) => tone(f, 1.2, { type: 'triangle', vol: 0.04, at: 0.55 }));

@@ -29,11 +29,13 @@
       xstand: { x: 2.3, z: 7.1 }, xconsole: { x: 10.6, z: 6.8 }, pacs: { x: 16, z: 17 },
       portable: { x: 33, z: 12.9 }, erbed: { x: 31.6, z: 18.2 }, seat: { x: 27, z: 19.9 },
       lin: { x: 16.6, z: 6 }, ctconsole: { x: 22.3, z: 6.8 }, mri: { x: 29.4, z: 11.8 },
-      wu: { x: 6, z: 21.3 }, dr: { x: 17, z: 21 },
+      wu: { x: 6, z: 21.3 }, dr: { x: 17, z: 21 }, zhou: { x: 6.4, z: 17.9 }, ztable: { x: 6.2, z: 5.2 },
     },
   });
 
-  let player, path = null, follower = null, marker, ring;
+  let player, path = null, follower = null, marker, ring, cylinder, mriLabel, smokeTex;
+  const tasks = [], puffs = [];
+  let shakeT = 0, focusPt = null;
 
   function mat(color, opt) {
     const key = color + (opt ? JSON.stringify(opt) : '');
@@ -112,7 +114,8 @@
     if (o.prop) o.prop(P);
     scene.add(g);
     const c = { id, g, legL, legR, armL, armR, torso, head, walk: 0, phase: Math.random() * 10,
-      lines: o.lines || [], anchor: true, path: null, wait: 1 + Math.random() * 3, home: null, bubbleT: 0, lastSign: 1 };
+      lines: o.lines || [], anchor: true, path: null, wait: 1 + Math.random() * 3, home: null, bubbleT: 0, lastSign: 1,
+      frozen: false, speed: 0, onDone: null };
     c.label = addLabel(name, o.cls, () => tmp.set(g.position.x, g.position.y + 2.15, g.position.z), o.tag);
     c.bubble = addLabel('', 'bubble', () => tmp.set(g.position.x, g.position.y + 2.8, g.position.z));
     c.bubble.visible = false;
@@ -246,9 +249,25 @@
     addLabel('行動式 X 光機', 'machine', () => tmp.set(pm.position.x, 2.6, pm.position.z));
     addLabel('DR-01 · X 光', 'machine', () => tmp.set(5.2, 3.8, 3.7));
     addLabel('CT-01 · 待機中', 'machine', () => tmp.set(18, 3.6, 3.5));
-    addLabel('MR-01 · 3T', 'machine', () => tmp.set(30, 3.6, 3.7));
+    mriLabel = addLabel('MR-01 · 3T', 'machine', () => tmp.set(30, 3.6, 3.7));
     addLabel('DR 控制台', 'machine', () => tmp.set(10.6, 2.4, 5.4));
     addLabel('CT 控制台', 'machine', () => tmp.set(22.3, 2.4, 5.4));
+
+    // 氧氣鋼瓶（MRI 事件用）
+    cylinder = new THREE.Group();
+    const cyl = (r1, r2, h, c, y) => {
+      const m = new THREE.Mesh(new THREE.CylinderGeometry(r1, r2, h, 14), mat(c));
+      m.position.y = y; m.castShadow = true; cylinder.add(m);
+    };
+    cyl(0.14, 0.14, 0.8, '#2e8b57', 0.4); cyl(0.06, 0.14, 0.14, '#f7fafb', 0.87); cyl(0.04, 0.04, 0.12, '#8fa3ad', 1.0);
+    cylinder.visible = false;
+    scene.add(cylinder);
+    const sc = document.createElement('canvas');
+    sc.width = sc.height = 64;
+    const sg = sc.getContext('2d'), grad = sg.createRadialGradient(32, 32, 2, 32, 32, 32);
+    grad.addColorStop(0, 'rgba(255,255,255,0.95)'); grad.addColorStop(1, 'rgba(255,255,255,0)');
+    sg.fillStyle = grad; sg.fillRect(0, 0, 64, 64);
+    smokeTex = new THREE.CanvasTexture(sc);
 
     // 目前任務的站位：地上的脈動光圈
     ring = new THREE.Mesh(new THREE.RingGeometry(0.42, 0.6, 32),
@@ -272,6 +291,8 @@
     makeChar('lin', '林先生', { shirt: '#c9c2e8', pants: '#5b6470', hair: '#2b2b33', lines: ['肚子好痛……'] });
     makeChar('chen', '陳先生', { shirt: '#e8d2b0', pants: '#5b6470', lines: ['磁振要躺多久啊？'] });
     makeChar('wu', '吳小姐', { shirt: '#f0c9d6', pants: '#4a5d7a', hair: '#2b2b33', lines: ['（滑手機）', '叫到我了嗎？'] });
+    makeChar('zhou', '周小姐', { shirt: '#f2d0a4', pants: '#f1c9a5', hair: '#3b2b2b', lines: ['膝蓋好痛……'],
+      prop: (P) => P(0.68, 0.3, 0.44, '#6c5aa8', 0, 0.42, 0) });
     // 路人：沒有劇情，只負責讓科裡熱鬧一點
     makeChar('porter', '傳送員阿明', { shirt: '#5b6fb5', pants: '#34405e', tag: '#aab8c0',
       lines: ['借過借過～', '7 樓要接病人下來', '電梯又在等了……'] });
@@ -404,6 +425,7 @@
   }
 
   function stepNPC(c, dt, t) {
+    if (c.frozen) { if (c.bubbleT > 0 && (c.bubbleT -= dt) <= 0) c.bubble.visible = false; return; }
     const p = c.g.position, pp = player.g.position;
     const pinned = c.anchor || POI_NPC[world.target] === c.id;
     c.wait -= dt;
@@ -418,9 +440,11 @@
     let moving = false;
     if (c.path && c.path.length) {
       const tp = c.path[0], ex = tp.x - p.x, ez = tp.z - p.z, d = Math.hypot(ex, ez);
-      if (d < 0.1) { c.path.shift(); if (!c.path.length) c.path = null; }
-      else {
-        const s = Math.min(d, NPC_SPEED * dt);
+      if (d < 0.1) {
+        c.path.shift();
+        if (!c.path.length) { c.path = null; if (c.onDone) { const f = c.onDone; c.onDone = null; f(); } }
+      } else {
+        const s = Math.min(d, (c.speed || NPC_SPEED) * dt);
         p.x += (ex / d) * s; p.z += (ez / d) * s;
         c.g.rotation.y = turn(c.g.rotation.y, Math.atan2(ex, ez), dt * 10);
         moving = true;
@@ -468,6 +492,17 @@
     stepPlayer(dt);
     for (const id in chars) if (chars[id] !== player && chars[id].g.visible) stepNPC(chars[id], dt, t / 1000);
     chatter(dt);
+    for (let i = tasks.length - 1; i >= 0; i--) if (tasks[i](dt)) tasks.splice(i, 1);
+    for (let i = puffs.length - 1; i >= 0; i--) {
+      const q = puffs[i];
+      q.life += dt;
+      q.s.position.addScaledVector(q.v, dt);
+      q.v.multiplyScalar(0.985);
+      const k = q.life / q.max;
+      q.s.scale.setScalar(q.size * (0.6 + k * 2.2));
+      q.s.material.opacity = Math.max(0, 0.85 * (1 - k));
+      if (k >= 1) { scene.remove(q.s); q.s.material.dispose(); puffs.splice(i, 1); }
+    }
     const tp = world.pois[world.target];
     ring.visible = !!tp && !world.locked;
     if (tp) {
@@ -475,8 +510,12 @@
       const k = 1 + Math.sin(t / 220) * 0.12;
       ring.scale.set(k, k, k);
     }
-    const p = player.g.position;
+    const p = focusPt || player.g.position;
     camera.position.lerp(tmp.set(p.x + 20, 20, p.z + 20), Math.min(1, dt * 5));
+    if (shakeT > 0) {
+      shakeT -= dt;
+      camera.position.x += (Math.random() - 0.5) * 0.35; camera.position.z += (Math.random() - 0.5) * 0.35;
+    }
     renderer.render(scene, camera);
     updateLabels();
     if (world.onFrame) world.onFrame();
@@ -526,7 +565,8 @@
     world.place('lead', 21.4, 17, -1.2); world.place('intern', 19, 12.4, 0.6);
     world.place('nurse', 34.6, 18.4, -1.57); world.place('dr', 15.8, 21, -1.57);
     world.place('wang', 3.6, 16.6, 0, -0.12); world.place('lin', 5.6, 20, 0, -0.12); world.place('wu', 6.8, 20, 0, -0.12);
-    world.show('chen', false); world.show('lin', false); world.show('wu', false);
+    world.show('chen', false); world.show('lin', false); world.show('wu', false); world.show('zhou', false);
+    world.hotspot = null;
     world.place('porter', 8, 12.5); world.place('cleaner', 12, 22.6); world.place('visitor', 11.5, 17);
     ['lead', 'intern', 'nurse', 'dr', 'porter', 'cleaner', 'visitor'].forEach(world.release);
     world.portableMesh.position.set(34, 0, 11.8); world.portableMesh.rotation.y = 0;
@@ -536,6 +576,8 @@
     c.g.position.set(x, y || 0, z);
     if (rot !== undefined) c.g.rotation.y = rot;
     c.home = { x, z, rot }; c.path = null; c.anchor = true; c.seated = (y || 0) < 0;
+    c.frozen = false; c.speed = 0; c.onDone = null;
+    c.g.rotation.order = 'XYZ'; c.g.rotation.x = 0; c.g.rotation.z = 0;
     world.show(id, true);
   };
   // 解除固定，讓 NPC 沿自己的路線閒晃
@@ -562,6 +604,99 @@
     const t = world.pois[world.target];
     return t ? Math.hypot(player.g.position.x - t.x, player.g.position.z - t.z) : Infinity;
   };
+  // 躺在檢查台上（臉朝上、頭朝 -x）
+  world.lie = function (id, x, y, z) {
+    const c = chars[id];
+    world.place(id, x, z, 0, y);
+    c.seated = true; c.frozen = true;
+    c.g.rotation.order = 'YXZ';
+    c.g.rotation.set(-Math.PI / 2, Math.PI / 2, 0);
+  };
+  // 照劇本走：依序走過各點，走到最後一點時 resolve
+  world.scriptWalk = function (id, pts, speed) {
+    const c = chars[id];
+    c.anchor = true; c.frozen = false; c.speed = speed || 0;
+    const last = pts[pts.length - 1];
+    c.home = { x: last[0], z: last[1] };
+    c.path = pts.map(([x, z]) => ({ x, z }));
+    return new Promise((res) => { c.onDone = res; });
+  };
+  world.halt = function (id) { const c = chars[id]; c.path = null; c.onDone = null; c.home = { x: c.g.position.x, z: c.g.position.z }; };
+  world.posOf = function (id) { const p = chars[id].g.position; return { x: p.x, z: p.z }; };
+  // 抱著氧氣鋼瓶
+  world.carry = function (id, on) {
+    if (on) {
+      chars[id].g.add(cylinder);
+      cylinder.position.set(0, 0.35, 0.34); cylinder.rotation.set(0.12, 0, 0);
+      cylinder.visible = true;
+    } else {
+      scene.attach(cylinder);
+      cylinder.visible = false;
+    }
+  };
+  // 鋼瓶被磁場吸走：越靠近越快，最後黏在磁體孔口
+  world.flyCylinder = function (x, y, z, dur) {
+    scene.attach(cylinder);
+    const from = cylinder.position.clone(), to = new THREE.Vector3(x, y, z);
+    const r0 = cylinder.rotation.clone();
+    let t = 0;
+    return new Promise((res) => {
+      tasks.push((dt) => {
+        t = Math.min(1, t + dt / dur);
+        const k = t * t * t;
+        cylinder.position.lerpVectors(from, to, k);
+        cylinder.rotation.set(r0.x + k * 1.4, r0.y + k * 3, r0.z);
+        if (t >= 1) { res(); return true; }
+        return false;
+      });
+    });
+  };
+  world.dropCylinder = function (x, z) {
+    scene.attach(cylinder);
+    cylinder.position.set(x, 0.14, z); cylinder.rotation.set(0, 0.6, Math.PI / 2);
+  };
+  world.hideCylinder = function () { scene.attach(cylinder); cylinder.visible = false; };
+  // 被吸到磁體上夾住：往前傾、不再轉身
+  world.pin = function (id, x, z, dur, y) {
+    const c = chars[id];
+    c.path = null; c.frozen = true;
+    const from = c.g.position.clone(), to = new THREE.Vector3(x, y || 0, z);
+    let t = 0;
+    return new Promise((res) => {
+      tasks.push((dt) => {
+        t = Math.min(1, t + dt / dur);
+        c.g.position.lerpVectors(from, to, t * t);
+        c.g.rotation.x = -0.35 * t;
+        if (t >= 1) { res(); return true; }
+        return false;
+      });
+    });
+  };
+  world.shake = function (sec) { shakeT = sec; };
+  // 鏡頭暫時對準某處（例如 MRI 室），傳 null 回到玩家
+  world.focus = function (x, z) { focusPt = x == null ? null : new THREE.Vector3(x, 0, z); };
+  // 失超：磁體上方噴出白煙，往四周擴散
+  world.smoke = function (x, z, sec) {
+    let t = 0, acc = 0;
+    tasks.push((dt) => {
+      t += dt; acc += dt;
+      while (acc > 0.018) {
+        acc -= 0.018;
+        const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: smokeTex, color: 0x9aaab6, transparent: true, depthWrite: false, opacity: 0.7 }));
+        s.position.set(x + (Math.random() - 0.5) * 1.2, 2.9, z + (Math.random() - 0.5) * 1.2);
+        scene.add(s);
+        const a = Math.random() * Math.PI * 2, sp = 0.6 + Math.random() * 1.6;
+        puffs.push({ s, v: new THREE.Vector3(Math.cos(a) * sp, 0.4 + Math.random() * 1.2, Math.sin(a) * sp), life: 0, max: 2.5 + Math.random() * 2, size: 1.6 + Math.random() * 1.6 });
+      }
+      return t >= sec;
+    });
+  };
+  world.setMriLabel = function (text) { mriLabel.el.textContent = text; };
+  world.distToHotspot = function () {
+    const h = world.hotspot;
+    return h ? Math.hypot(player.g.position.x - h.x, player.g.position.z - h.z) : Infinity;
+  };
+
   world.follow = function (on) {
     follower = on ? world.portableMesh : null;
     if (RT.sfx) RT.sfx.hum(on);

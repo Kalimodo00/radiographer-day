@@ -24,7 +24,52 @@
     mrisafe: { t: 'MRI 安全篩檢', d: '進磁振室前確認病人身上與體內沒有不相容的金屬或電子裝置。磁場全年無休，沒在掃描時也一樣強。' },
     projectile: { t: '投射效應', d: '鐵磁性物品靠近磁體時會被高速吸過去，氧氣鋼瓶、輪椅、剪刀都可能變成飛彈。' },
     gauss: { t: '5 高斯線', d: '磁場強度 5 高斯的邊界，地上常畫黃線標示。線內屬於管制區，沒經過篩檢的人和物品不能進去。' },
+    chaperone: { t: '告知、同意與陪同', d: '擺位需要碰觸病人時，先說明原因並取得同意，盡量請病人自行調整或用手背輔助；檢查服、布單遮蓋與同性同仁陪同，能保護病人，也保護放射師。' },
+    harass: { t: '權勢性騷擾', d: '利用醫療、教育、職場等關係，對受自己照護或監督的人性騷擾。性騷擾防治法對權勢性騷擾加重處罰，醫事人員更要守住專業界線。' },
+    quench: { t: '失超（Quench）', d: 'MRI 的超導磁體靠液態氦維持低溫。緊急失超會讓液態氦迅速汽化、經失超管排出，磁場在短時間內消失。只用在有人被夾住或有生命危險時，代價是大量氦氣與長時間停機。' },
     pregnancy: { t: '懷孕確認', d: '育齡女性做游離輻射檢查前，要在顧及隱私的情況下詢問懷孕可能；有疑慮就先請醫師評估。' },
+  };
+
+  // 違法事件：法條內容依全國法規資料庫（2026 年 10 月）查詢後簡化，實際認定依個案
+  const PRO = { name: '醫事放射師法第 37 條', desc: '醫事放射師於業務上有違法或不正當行為。',
+    pen: '新臺幣 2 萬～10 萬元罰鍰；情節重大者停業 1 個月～1 年或廢止執業執照，涉及刑事責任者移送檢察機關' };
+  RT.CRIMES = {
+    touch: {
+      title: '你觸犯了法律：不當碰觸病人胸部',
+      act: '你在擺位時，未經說明與同意，直接用手碰觸周小姐的胸部。她當場報警，警察已經到了 X 光室。',
+      groups: [
+        { head: '刑事責任（依情節認定其一）', laws: [
+          { name: '刑法第 228 條第 2 項｜利用權勢猥褻罪', desc: '對因醫療關係受自己照護的人，利用權勢或機會為猥褻行為。', pen: '3 年以下有期徒刑（非告訴乃論）' },
+          { name: '性騷擾防治法第 25 條｜強制觸摸罪', desc: '意圖性騷擾，乘人不及抗拒觸摸胸部等身體隱私處。', pen: '2 年以下有期徒刑、拘役或併科 10 萬元以下罰金；利用醫療權勢或機會犯之，加重其刑至二分之一' },
+        ] },
+        { head: '民事與行政責任', laws: [
+          { name: '性騷擾防治法第 12 條｜損害賠償', desc: '對他人性騷擾者，須負損害賠償責任。', pen: '屬權勢性騷擾者，法院得另判 1～3 倍懲罰性賠償金' },
+          PRO,
+        ] },
+      ],
+      right: '碰觸前先說明原因並取得同意；示範姿勢讓病人自己貼近探測器；必要時只用手背碰肩膀；請同性同仁在場陪同。',
+      real: '近年確實有醫事放射師因為在檢查中不當碰觸、偷窺或偷拍病人，被判刑、罰款，甚至失去執照。專業的距離，保護的是病人，也是你自己。',
+      logTitle: '不當碰觸病人（觸法）',
+      logText: '擺位時未經同意碰觸病人胸部，可能觸犯刑法第 228 條或性騷擾防治法第 25 條，並面臨民事賠償與醫事放射師法的停業、廢照處分。',
+    },
+    peek: {
+      title: '你觸犯了法律：偷窺病人裙底',
+      act: '你繞到檢查台尾端，彎腰偷看周小姐的裙底。她發現後大聲呼救，院內同仁報警處理。',
+      groups: [
+        { head: '行政與民事責任', laws: [
+          { name: '性騷擾防治法第 2 條第 2 項、第 27 條｜權勢性騷擾', desc: '利用醫療關係對受自己照護的人性騷擾，經申訴調查成立。', pen: '新臺幣 6 萬～60 萬元罰鍰' },
+          { name: '性騷擾防治法第 12 條｜損害賠償', desc: '對他人性騷擾者，須負損害賠償責任。', pen: '屬權勢性騷擾者，法院得另判 1～3 倍懲罰性賠償金' },
+          PRO,
+        ] },
+        { head: '如果還用手機拍下來', laws: [
+          { name: '刑法第 319-1 條｜無故攝錄性影像罪', desc: '未經同意，以照相、錄影等方法攝錄他人性影像。', pen: '3 年以下有期徒刑；未遂也罰' },
+        ] },
+      ],
+      right: '病人躺著檢查時，用布單蓋住不需要照的部位，只露出檢查部位；站在需要擺位的位置，不在檢查以外的地方逗留。',
+      real: '近年確實有醫事放射師因為在檢查中不當碰觸、偷窺或偷拍病人，被判刑、罰款，甚至失去執照。專業的距離，保護的是病人，也是你自己。',
+      logTitle: '偷窺病人（觸法）',
+      logText: '在檢查台尾端偷窺病人裙底，屬權勢性騷擾，可處 6 萬～60 萬元罰鍰並負民事賠償；若偷拍，另觸犯刑法第 319-1 條。',
+    },
   };
 
   const mini = async (title, intro, game, res, codex) => {
@@ -214,17 +259,104 @@
             { label: '都排到了，應該沒關係', grade: 'bad', fx: { safety: -20 }, text: '磁場可能讓節律器失靈或發熱。這是 MRI 室最嚴重的那一類意外。' },
           ],
         });
-        await ui.say(NARR, 'MRI 室的門還開著。小傑推著一支氧氣鋼瓶，快步朝門口走來。');
-        const body = ui.openPanel('攔住他！', '「學長姐，病人說有點喘，我拿氧氣進去——」');
-        const ok = await ui.quickGame(body, '攔住小傑', 3200);
-        await ui.feedback(body, '氧氣鋼瓶', ok ? 'good' : 'bad',
-          ok ? '你一把抓住推車。一般的鋼瓶是鐵磁性的，過了那條黃線就會被吸進磁體。小傑的臉白了。'
-            : '鋼瓶在門口掙脫推車，飛進磁體中心。沒有人受傷，但機器要停機好幾天。',
-          ok ? { safety: 10 } : { safety: -15, pace: -8 }, ['projectile']);
         world.show('chen', false);
+        world.place('intern', 21, 12.3, 1.57);
+        world.carry('intern', true);
+        await ui.say(NARR, '走廊另一頭傳來急促的腳步聲。小傑抱著一支氧氣鋼瓶，朝 MRI 室衝過來。');
+        world.say('intern', '讓開讓開！裡面的病人喘不過氣，我拿氧氣進去救人！', 3.6);
+        const walk = world.scriptWalk('intern', [[28.8, 11.2], [30, 10.2], [30, 8.4]], 3.4);
+        const body = ui.openPanel('攔住他！', '小傑抱著鐵製的氧氣鋼瓶，正要衝進 MRI 室。', { compact: true });
+        const ref = {};
+        walk.then(() => { if (ref.cancel) ref.cancel(); });
+        const ok = await ui.quickGame(body, '攔住小傑', 3600, ref);
+        if (ok) {
+          world.halt('intern');
+          world.say('intern', '啊……對，鋼瓶是鐵的！', 3);
+          await ui.feedback(body, '氧氣鋼瓶', 'good',
+            '你一把拉住小傑。一般的氧氣鋼瓶是鐵磁性的，過了那條黃線就會被吸進磁體。病人需要氧氣，要用 MR 相容的鋼瓶或牆上的氧氣。小傑的臉白了。',
+            { safety: 10 }, ['projectile']);
+          world.carry('intern', false);
+        } else {
+          ui.closePanel();
+          world.focus(29.4, 7.4);
+          await walk;
+          RT.sfx.play('whoosh');
+          world.say('intern', '咦？！鋼瓶自己——', 1.5);
+          await world.flyCylinder(30, 1.15, 5.55, 0.9);
+          RT.sfx.play('slam'); world.shake(0.6);
+          await world.pin('intern', 30, 6.0, 0.35, 0.7);
+          RT.sfx.play('slam'); world.shake(0.4);
+          world.say('intern', '救命啊！！我被夾住了！', 6);
+          await ui.say(NARR, '鋼瓶以極快的速度飛向磁體孔口，小傑連人帶鋼瓶被吸過去，夾在磁體上動彈不得。');
+          await ui.choose({
+            title: '小傑被夾在磁體上', intro: '他臉色發白、呼吸急促。3T 的磁場一直都在，你要怎麼做？', codex: ['quench'],
+            options: [
+              { label: '請其他人撤離、打開門，立刻按下緊急失超（Quench）', grade: 'good', fx: { safety: 6 }, text: '有人被夾住、可能受傷時，就是按下失超的時機。同時讓其他人離開、打開門，避免氦氣外洩造成缺氧。' },
+              { label: '先試著徒手把鋼瓶拔下來', grade: 'bad', fx: { safety: -8 }, text: '3T 磁場的吸力可以達到好幾百公斤，你根本拔不動，還差點把自己的手夾進去。最後還是得按失超，只是晚了寶貴的幾分鐘。' },
+              { label: '打給原廠工程師，等他來慢慢降場', grade: 'bad', fx: { safety: -12 }, text: '一般的降場要好幾個小時，被夾住的人等不了。人命優先，這時候該按的就是失超。' },
+            ],
+          });
+          RT.sfx.play('hiss');
+          world.smoke(30, 3.7, 4);
+          world.setMriLabel('MR-01 · 失超停機');
+          await ui.say(NARR, '轟——液態氦在幾十秒內汽化，大量白色氣體湧出。磁場消失，鋼瓶掉了下來，小傑也終於脫身。');
+          await ui.quenchBill();
+          world.place('intern', 30, 7.4, 0);
+          world.dropCylinder(30.7, 6.3);
+          world.say('intern', '對不起……我只是想救人……', 3.5);
+          const b2 = ui.openPanel('氧氣鋼瓶', '');
+          await ui.feedback(b2, '氧氣鋼瓶', 'bad',
+            '一般的氧氣鋼瓶是鐵磁性的，MRI 室裡要用 MR 相容的鋼瓶或牆上的氧氣。這次的代價：補充氦氣、重新升場與停機，約新台幣 200 萬元，MRI 停機一到兩週，今天的 MRI 病人全部要改期。',
+            { safety: -15, pace: -10 }, ['projectile']);
+          world.focus(null);
+        }
         world.place('intern', 19, 12.4, 0.6);
         world.release('intern');
+        world.place('zhou', 5.6, 16.6, 0, -0.12);
         world.place('wu', 6.8, 20, 0, -0.12);
+      },
+    },
+    {
+      time: '15:10', poi: 'zhou', place: '候診區', hint: '到候診區，周小姐要照胸部和右膝 X 光', prompt: '叫病人',
+      async run() {
+        await ui.say('周小姐', '你好，我是周○婷，民國 91 年 3 月 8 日生。今天要照職前健檢的胸部，還有昨天打球扭到的右膝。');
+        await ui.say('你', '好的，跟檢查單一樣。胸部要先換上檢查服，更衣室在 X 光室裡面。');
+        world.place('zhou', 1.4, 7.1, -1.57);
+      },
+    },
+    {
+      time: '15:15', poi: 'xstand', place: 'X 光室', hint: '到 X 光室的立式架，幫周小姐擺胸部 PA', prompt: '幫病人擺位',
+      async run() {
+        const o = await ui.choose({
+          title: '擺位的時候', intro: '周小姐換好檢查服站上立式架，但胸口離探測器還有一段距離，肩膀也沒有往前靠。', codex: ['chaperone', 'harass'],
+          options: [
+            { label: '先說明要怎麼站並示範，請她自己貼近探測器；需要調整時先告知，只碰肩膀，並請女性同仁在場', grade: 'good', fx: { safety: 10, quality: 6 }, text: '周小姐照著示範把肩膀往前一靠，一次到位。說明、同意、陪同，保護病人，也保護你自己。' },
+            { label: '從遠處口頭指示，她怎麼站就怎麼照', grade: 'ok', fx: { quality: -4 }, text: '沒有不當接觸，但擺位不正，肩胛骨沒有拉開、蓋住了肺野。示範一次給她看就能解決。' },
+            { label: '直接用手把她的胸部往探測器上壓，比較快', crime: 'touch' },
+          ],
+        });
+        if (o.crime) return ui.crime(o.crime);
+        await ui.say('你', '深吸一口氣——停住，不要動。');
+        RT.sfx.play('xray');
+        await ui.say('周小姐', '好了嗎？那我換回衣服，接著照膝蓋。');
+        world.lie('zhou', 7.0, 1.05, 3.7);
+      },
+    },
+    {
+      time: '15:25', poi: 'ztable', place: 'X 光室', hint: '周小姐躺上檢查台了，到檢查台旁邊準備照右膝', prompt: '準備擺位',
+      hotspot: { x: 8.1, z: 3.7, label: '👀 從床尾偷看裙底', crime: 'peek', narr: '你繞到檢查台尾端，彎下腰往裙底看……' },
+      async run() {
+        await ui.choose({
+          title: '照右膝之前', intro: '周小姐換回自己的短裙，躺在檢查台上。右膝要照正面和側面。',
+          options: [
+            { label: '先用布單蓋住她的腿和裙子，只露出右膝，再開始擺位', grade: 'good', fx: { safety: 8 }, text: '只露出要照的部位。病人放心，你也能專心擺位。' },
+            { label: '請她自己把裙子拉好，直接照', grade: 'ok', fx: { safety: 2 }, text: '還算尊重，但照側面要翻身時很難顧到。準備一條布單，比靠病人自己拉更周到。' },
+            { label: '裙子短沒關係，反正很快就照完', grade: 'bad', fx: { safety: -8 }, text: '沒有遮蓋就擺位，周小姐從頭緊張到尾，事後向醫院反映。隱私也是醫療品質的一部分。' },
+          ],
+        });
+        RT.sfx.play('xray');
+        await ui.say('周小姐', '謝謝，我本來還有點緊張。');
+        world.show('zhou', false);
       },
     },
     {

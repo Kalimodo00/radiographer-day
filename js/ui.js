@@ -15,6 +15,7 @@
   };
 
   const play = (n) => RT.sfx && RT.sfx.play(n);
+  const speak = (text, who) => RT.voice && RT.voice.speak(text, who);
 
   ui.renderStats = function (root, stats) {
     root.innerHTML = '';
@@ -55,37 +56,43 @@
   ui.say = function (who, text) {
     RT.world.locked = true;
     $('dlgWho').textContent = who;
-    $('dlgText').textContent = text.replace(/\{name\}/g, RT.state.name);
+    const line = text.replace(/\{name\}/g, RT.state.name);
+    $('dlgText').textContent = line;
     $('dialog').classList.remove('hidden');
     play('blip');
+    speak(line, who);
     return new Promise((res) => { dialogResolve = res; });
   };
   ui.advance = function () {
     if (!dialogResolve) return false;
     const r = dialogResolve; dialogResolve = null;
     $('dialog').classList.add('hidden');
+    if (RT.voice) RT.voice.stop();
     r();
     return true;
   };
 
   // --- 面板 ---
-  ui.openPanel = function (title, intro) {
+  ui.openPanel = function (title, intro, opts) {
     RT.world.locked = true;
+    $('panel').classList.toggle('compact', !!(opts && opts.compact));
     $('panelKicker').textContent = RT.state.time + ' · ' + (RT.state.place || '');
     $('panelTitle').textContent = title;
     const body = $('panelBody');
     body.innerHTML = '';
     if (intro) body.appendChild(el('p', '', intro));
     $('panel').classList.remove('hidden');
+    speak(title + '。' + (intro || ''));
     $('panel').scrollTop = 0;
     return body;
   };
-  ui.closePanel = () => $('panel').classList.add('hidden');
+  ui.closePanel = () => { $('panel').classList.add('hidden'); if (RT.voice) RT.voice.stop(); };
 
   // 顯示結果、套用數值、記錄到交班回顧
   ui.feedback = function (body, title, grade, text, fx, codex) {
     play(grade);
     const fb = el('div', 'fb ' + grade, `<b>${GRADE[grade]}</b>${text}`);
+    speak(GRADE[grade] + '。' + text);
     fb.appendChild(ui.applyFx(fx));
     body.appendChild(fb);
     RT.state.log.push({ title, grade, text });
@@ -105,11 +112,14 @@
     if (cfg.chart) body.appendChild(el('div', 'chart', cfg.chart));
     const opts = el('div', 'opts');
     body.appendChild(opts);
+    const nums = ['一', '二', '三', '四'];
+    speak(cfg.title + '。' + (cfg.intro || '') + cfg.options.map((o, i) => `選項${nums[i]}：${o.label}。`).join(''));
     return new Promise((res) => {
       cfg.options.forEach((o) => {
         const b = el('button', 'opt', o.label);
         b.type = 'button';
         b.onclick = () => {
+          if (o.crime) { ui.closePanel(); res(o); return; }
           opts.remove();
           body.appendChild(el('p', '', '▸ ' + o.label)).style.color = '#8fa6b2';
           ui.feedback(body, cfg.title, o.grade, o.text, o.fx, cfg.codex).then(res);
@@ -346,7 +356,7 @@
   };
 
   // --- 小遊戲：限時反應 ---
-  ui.quickGame = function (body, label, ms) {
+  ui.quickGame = function (body, label, ms, cancelRef) {
     const bar = el('div', 'timer', '<i></i>');
     body.appendChild(bar);
     const b = button(body, label, 'danger');
@@ -362,7 +372,53 @@
         if (left <= 0) finish(false); else requestAnimationFrame(tick);
       })(t0);
       b.onclick = () => finish(true);
+      if (cancelRef) cancelRef.cancel = () => finish(false);
     });
+  };
+
+  // --- 違法事件：警笛、紅藍燈、鐵柵欄落下，再列出法條與後果 ---
+  ui.crime = function (key) {
+    const d = RT.CRIMES[key];
+    const ov = $('crime');
+    RT.world.locked = true;
+    $('crimeTitle').textContent = d.title;
+    $('crimeAct').textContent = d.act;
+    $('crimeLaws').innerHTML = d.groups.map((g) =>
+      `<h3>${g.head}</h3>` + g.laws.map((l) => `<div class="law"><b>${l.name}</b><span>${l.desc}</span><em>${l.pen}</em></div>`).join('')).join('');
+    $('crimeRight').textContent = d.right;
+    $('crimeReal').textContent = d.real;
+    ov.classList.remove('hidden', 'stage2', 'stage3');
+    ov.scrollTop = 0;
+    play('siren');
+    RT.state.crimes = (RT.state.crimes || 0) + 1;
+    RT.state.log.push({ title: d.logTitle, grade: 'bad', text: d.logText });
+    ui.applyFx({ safety: -40 });
+    setTimeout(() => { ov.classList.add('stage2'); play('clang'); }, 1300);
+    setTimeout(() => {
+      ov.classList.add('stage3');
+      speak(d.title + '。' + d.act + d.groups.map((g) => g.head + '：' + g.laws.map((l) => l.name + '，' + l.pen).join('；')).join('。') + '。' + d.real);
+    }, 2300);
+    return new Promise((res) => {
+      const done = (r) => { ov.classList.add('hidden'); if (RT.voice) RT.voice.stop(); res(r); };
+      $('btnCrimeRetry').onclick = () => done('retry');
+      $('btnCrimeEnd').onclick = () => done('arrest');
+    });
+  };
+
+  // --- 失超：白霧與帳單 ---
+  ui.quenchBill = function () {
+    const f = $('fog');
+    f.classList.remove('hidden');
+    f.classList.remove('show');
+    void f.offsetWidth;
+    f.classList.add('show');
+    return new Promise((res) => setTimeout(() => {
+      const bill = $('bill');
+      bill.classList.remove('hidden');
+      play('cash');
+      speak('緊急失超。損失約新台幣兩百萬元。');
+      $('btnBill').onclick = () => { bill.classList.add('hidden'); f.classList.add('hidden'); if (RT.voice) RT.voice.stop(); res(); };
+    }, 3200));
   };
 
   // --- 便當 ---
